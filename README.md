@@ -1,7 +1,7 @@
 ﻿# timefarm-bot
 timefarm bot auto claim/tap multiple account https://t.me/TimeFarmCryptoBot
 
-<img width="562" alt="2024-06-18 18_23_36-main py - tapbot - Visual Studio Code" src="https://github.com/maldiharyojudanto/timefarm-bot/assets/76139419/b7641bdf-bb24-44c3-9ad2-62d9afd2e1c4">
+<img width="705" alt="2024-06-21 00_17_28-main py - tapbot - Visual Studio Code" src="https://github.com/maldiharyojudanto/timefarm-bot/assets/76139419/c12ba345-27a9-4320-80e9-3eb7d464f0e7">
 
 ## Features
 - Auto create token (login by query_id)
