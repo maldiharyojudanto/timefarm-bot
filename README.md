@@ -6,6 +6,7 @@ timefarm bot auto claim/tap multiple account https://t.me/TimeFarmCryptoBot
 ## Features
 - Auto create token (login by query_id)
 - Auto start/claim farming
+- Auto upgrade
 - Auto complete tasks
 - Auto claim refferal balance
 - Auto refresh token
