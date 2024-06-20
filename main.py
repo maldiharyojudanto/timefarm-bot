@@ -6,7 +6,7 @@ import os
 import datetime
 from colorama import Fore, Style, init
 from dotenv import load_dotenv
-import math 
+import ast
 
 init()
 load_dotenv()
@@ -328,6 +328,46 @@ async def claimReff(session, token):
             # print(f"{e}")
             continue
 
+async def upgradeLevel(session, token):
+    url = "https://tg-bot-tap.laborx.io/api/v1/me/level/upgrade"
+
+    payload = json.dumps({})
+
+    headers = {
+        'accept': '*/*',
+        'accept-language': 'en-US,en;q=0.9',
+        'authorization': f'Bearer {token}',
+        'content-type': 'application/json',
+        'origin': 'https://tg-tap-miniapp.laborx.io',
+        'priority': 'u=1, i',
+        'referer': 'https://tg-tap-miniapp.laborx.io/',
+        'sec-ch-ua': '"Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24", "Microsoft Edge WebView2";v="125"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0'
+    }
+
+    while True:
+        try:
+            resp = await session.post(url, headers=headers, data=payload)
+
+            if resp.status_code == 200:
+                # print(resp.json())
+                return resp.json()
+            elif resp.status_code == 403:
+                # print(resp.json())
+                return resp.json() # "message": "Max level reached", message': 'Not enough balance',
+            else:
+                continue
+        except httpx.HTTPError as e:
+            print(f"Error to upgradeLevel, try again ... {e}")
+        except json.decoder.JSONDecodeError as e:
+            # print(f"{e}")
+            continue
+
 async def runGetToken():
     try:
         with open('query.txt', 'r') as qf:
@@ -338,9 +378,11 @@ async def runGetToken():
                     query = querys[i].strip()
 
                     get_token = await getToken(session, query)
+                    levelnow = get_token['info']['level']
                     token = get_token['token']
+                    level = get_token['levelDescriptions']
 
-                    querys[i] = f"{token}\n"
+                    querys[i] = f"{levelnow}|{token}|{level}\n"
 
                     with open('tokens.txt', 'w+') as tf:
                         tf.writelines(querys)
@@ -352,7 +394,7 @@ async def runGetToken():
         qf.close()
         exit()
 
-async def runAll(token, index):
+async def runAll(levelnow, token, index, upgradelist):
     async with httpx.AsyncClient() as session:
         info = await getInfoUser(session, token)
         list_task = await getListTask(session, token)
@@ -401,7 +443,18 @@ async def runAll(token, index):
         else:
             status_autoclaimreff = "Off"
 
-        print(f"[Account {index}] | Balance : {Fore.GREEN}{int(balance)}{Style.RESET_ALL} | Reward : {farming_reward}/{farming_duration} hours | Status : {status_farm} | Tasks : {status_task} | Refferal : {status_reff}")
+        if os.getenv("AUTO_UPGRADE") == "true":
+            status_upgrade = "On"
+            for i in upgradelist:
+                if 'price' in i:
+                    if i['price'] != -1 and i['level'] > levelnow and balance > i['price']:
+                        await upgradeLevel(session, token)
+                    else:
+                        pass
+        else:
+            status_upgrade = "Off"
+
+        print(f"[Account {index}] | Level : {levelnow} | Balance : {Fore.GREEN}{int(balance)}{Style.RESET_ALL} | Reward : {farming_reward}/{farming_duration} hours | Status : {status_farm} | Tasks : {status_task} | Auto upgrade : {status_upgrade} | Referral : {status_reff} ")
 
 async def main():
     # query = ""
@@ -428,8 +481,10 @@ async def main():
             tokens = tf.readlines()
             for i in range(len(tokens)):
                 # print(tokens[i].strip())
-                token_auth = tokens[i].strip()
-                schedules.append(asyncio.create_task(runAll(token_auth, i+1)))
+                token_auth = tokens[i].strip().split("|")
+                # print(token_auth[0])
+                upgradelist = ast.literal_eval(token_auth[2])
+                schedules.append(asyncio.create_task(runAll(token_auth[0], token_auth[1], i+1, upgradelist)))
 
         # gather to run concurently
         await asyncio.gather(*schedules) # BOOOMMMM TO RUN
