@@ -1,5 +1,5 @@
 ﻿# timefarm-bot
-timefarm bot auto claim/tap multiple account https://t.me/TimeFarmCryptoBot
+timefarm bot auto claim/farming multiple account https://t.me/TimeFarmCryptoBot
 
 <img width="705" alt="2024-06-21 00_17_28-main py - tapbot - Visual Studio Code" src="https://github.com/maldiharyojudanto/timefarm-bot/assets/76139419/c12ba345-27a9-4320-80e9-3eb7d464f0e7">
 
