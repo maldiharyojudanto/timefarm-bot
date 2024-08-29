@@ -12,24 +12,27 @@ init()
 load_dotenv()
 
 async def getToken(session, query):
-    url = "https://tg-bot-tap.laborx.io/api/v1/auth/validate-init"
+    url = "https://tg-bot-tap.laborx.io/api/v1/auth/validate-init/v2"
 
-    payload = f"{query}"
+    payload = json.dumps({
+        "initData": f"{query}",
+        "platform": "tdesktop"
+    })
     
     headers = {
         'accept': '*/*',
         'accept-language': 'en-US,en;q=0.9',
-        'content-type': 'text/plain;charset=UTF-8',
-        'origin': 'https://tg-tap-miniapp.laborx.io',
+        'content-type': 'application/json',
+        'origin': 'https://timefarm.app',
         'priority': 'u=1, i',
-        'referer': 'https://tg-tap-miniapp.laborx.io/',
-        'sec-ch-ua': '"Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24", "Microsoft Edge WebView2";v="125"',
+        'referer': 'https://timefarm.app/',
+        'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Microsoft Edge";v="128", "Microsoft Edge WebView2";v="128"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0'
+        'sec-fetch-site': 'cross-site',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0'
     }
 
     while True:
@@ -394,6 +397,10 @@ async def runGetToken():
         qf.close()
         exit()
 
+def countLength(n):
+    num = str(n)
+    return len(num)
+
 async def runAll(levelnow, token, index, upgradelist):
     async with httpx.AsyncClient() as session:
         info = await getInfoUser(session, token)
@@ -444,7 +451,7 @@ async def runAll(levelnow, token, index, upgradelist):
             status_autoclaimreff = "Off"
 
         if os.getenv("AUTO_UPGRADE") == "true":
-            status_upgrade = "On"
+            status_upgrade = f"{Fore.GREEN}On{Style.RESET_ALL}"
             for i in upgradelist:
                 if 'price' in i:
                     if i['price'] != -1 and i['level'] > levelnow and balance > i['price']:
@@ -453,8 +460,13 @@ async def runAll(levelnow, token, index, upgradelist):
                         pass
         else:
             status_upgrade = "Off"
+        
+        lengcount = countLength(index)
 
-        print(f"[Account {index}] | Level : {levelnow} | Balance : {Fore.GREEN}{int(balance)}{Style.RESET_ALL} | Reward : {farming_reward}/{farming_duration} hours | Status : {status_farm} | Tasks : {status_task} | Auto upgrade : {status_upgrade} | Referral : {status_reff} ")
+        if lengcount == 1:
+            print(f"[Account 0{index}] | Level : {levelnow} | Balance : {Fore.GREEN}{int(balance)}{Style.RESET_ALL} | Reward : {farming_reward}/{farming_duration} hours | Status : {status_farm} | Tasks : {status_task} | Auto upgrade : {status_upgrade} | Referral : {status_reff} ")
+        else:
+            print(f"[Account {index}] | Level : {levelnow} | Balance : {Fore.GREEN}{int(balance)}{Style.RESET_ALL} | Reward : {farming_reward}/{farming_duration} hours | Status : {status_farm} | Tasks : {status_task} | Auto upgrade : {status_upgrade} | Referral : {status_reff} ")
 
 async def main():
     # query = ""
